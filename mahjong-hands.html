@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🀄 Mahjong Hands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mahjong Hands">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#cc1f8a;--red-light:#fce8f5;--red-dark:#96146a;
+  --gold:#f5a623;--gold-light:#fef3dc;--gold-dark:#c47d00;
+  --teal:#00b8a0;--teal-light:#d6f5f1;--teal-dark:#007a6b;
+  --purple:#7c4dff;--purple-light:#ede7ff;--purple-dark:#5a2fd4;
+  --green:#2e7d32;--green-light:#e8f5e9;--green-dark:#1b5e20;
+  --navy:#1a1f3a;--cream:#fdf8f0;--white:#ffffff;
+  --text:#1a1f3a;--text-mid:#4a5080;--text-soft:#8890b8;
+  --shadow:0 4px 24px rgba(26,31,58,0.12);
+  --shadow-lg:0 8px 40px rgba(26,31,58,0.18);
+  --r:16px;--r-sm:10px;--r-xs:6px;
+  --font:'Outfit',sans-serif;
+}
+body{font-family:var(--font);background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:radial-gradient(circle at 15% 20%,rgba(124,77,255,0.07) 0%,transparent 50%),
+    radial-gradient(circle at 85% 80%,rgba(0,184,160,0.07) 0%,transparent 50%);}
+.wrap{max-width:700px;margin:0 auto;padding:0 1rem 5rem;position:relative;z-index:1}
+.header{padding:2rem 0 1.5rem;text-align:center}
+.header h1{font-size:28px;font-weight:700;color:#ff1493;font-family:'Playfair Display',serif;font-style:italic}
+.header p{font-size:14px;color:var(--text-soft);margin-top:4px}
+.tabs{display:flex;gap:8px;margin-bottom:1.5rem;background:var(--white);border-radius:var(--r);padding:6px;box-shadow:var(--shadow);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tab{flex:0 0 auto;padding:10px 16px;border:none;border-radius:var(--r-sm);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all 0.2s;color:var(--text-soft);background:transparent;white-space:nowrap}
+.tab.active.t-overview{background:var(--red);color:var(--white);box-shadow:0 2px 12px rgba(204,31,138,0.35)}
+.tab.active.t-sessions{background:var(--purple);color:var(--white);box-shadow:0 2px 12px rgba(124,77,255,0.35)}
+.tab.active.t-insights{background:var(--gold);color:var(--white);box-shadow:0 2px 12px rgba(245,166,35,0.35)}
+.tab:hover:not(.active){background:var(--cream)}
+.section{display:none}.section.active{display:block}
+.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem}
+.sec-icon{width:40px;height:40px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.sec-header h2{font-size:18px;font-weight:700;color:var(--navy)}
+.sec-header p{font-size:13px;color:var(--text-soft);margin-top:1px}
+.category-header{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--white);padding:8px 14px;margin-top:12px;margin-bottom:6px;border-radius:var(--r-xs);background:var(--navy)}
+.hand-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--white);border-radius:var(--r-sm);box-shadow:var(--shadow);margin-bottom:5px}
+.hand-info{flex:1;min-width:0}
+.hand-tiles{font-size:13px;font-weight:700;color:var(--navy);font-family:monospace;margin-bottom:2px}
+.hand-desc{font-size:11px;color:var(--text-soft)}
+.hand-label{font-size:10px;font-weight:800;text-transform:uppercase;background:var(--purple-light);color:var(--purple-dark);padding:1px 6px;border-radius:10px;margin-right:5px}
+.hand-count{font-size:20px;font-weight:800;color:var(--navy);min-width:32px;text-align:right}
+.hand-count.zero{color:var(--text-soft);font-size:15px}
+.hand-bar-wrap{width:60px;background:rgba(26,31,58,0.06);border-radius:20px;height:6px;overflow:hidden}
+.hand-bar{height:6px;border-radius:20px;background:linear-gradient(90deg,var(--red),var(--purple));transition:width 0.4s}
+.summary-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem}
+.summary-card{flex:1;min-width:80px;background:var(--white);border-radius:var(--r-sm);box-shadow:var(--shadow);padding:12px;text-align:center}
+.summary-val{font-size:22px;font-weight:800;color:var(--navy)}
+.summary-label{font-size:11px;color:var(--text-soft);margin-top:2px}
+.session-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;cursor:pointer;transition:transform 0.15s}
+.session-card:hover{transform:translateY(-2px)}
+.session-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(26,31,58,0.06)}
+.session-date{font-size:15px;font-weight:700;color:var(--navy)}
+.session-total{font-size:13px;font-weight:700;color:var(--red);background:var(--red-light);padding:3px 10px;border-radius:20px}
+.session-preview{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px}
+.session-pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--purple-light);color:var(--purple-dark)}
+.add-session-btn{width:100%;padding:14px;border:2px dashed rgba(124,77,255,0.3);border-radius:var(--r-sm);background:transparent;font-size:14px;font-weight:600;font-family:var(--font);color:var(--purple);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:1rem;transition:all 0.15s}
+.add-session-btn:hover{background:var(--purple-light)}
+.insight-section{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin-bottom:1.25rem}
+.insight-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.insight-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(26,31,58,0.06)}
+.insight-row:last-child{border-bottom:none}
+.insight-rank{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.insight-hand{flex:1;font-size:12px;font-weight:600;color:var(--navy)}
+.insight-count{font-size:14px;font-weight:800;padding:3px 10px;border-radius:20px}
+.never-pill{font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;background:rgba(26,31,58,0.06);color:var(--text-soft);display:inline-block;margin:3px}
+.modal-bg{position:fixed;inset:0;background:rgba(26,31,58,0.55);display:flex;align-items:flex-end;justify-content:center;z-index:200;visibility:hidden;opacity:0;transition:opacity 0.2s,visibility 0.2s;backdrop-filter:blur(3px)}
+.modal-bg.open{visibility:visible;opacity:1}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:1.75rem;width:100%;max-width:500px;box-shadow:var(--shadow-lg);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-handle{width:40px;height:4px;background:rgba(26,31,58,0.15);border-radius:2px;margin:0 auto 1.25rem}
+.modal-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:1.25rem}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:5px}
+.field input,.field select{width:100%;padding:11px 12px;border:2px solid rgba(26,31,58,0.1);border-radius:var(--r-sm);background:var(--cream);font-size:14px;font-family:var(--font);color:var(--text);outline:none;transition:border-color 0.2s}
+.field input:focus,.field select:focus{border-color:var(--purple);background:var(--white)}
+.modal-btns{display:flex;gap:8px;margin-top:1.5rem;position:sticky;bottom:-1.75rem;background:var(--white);padding:12px 0 1.75rem;margin-bottom:-1.75rem}
+.modal-btns button{flex:1;padding:14px;border-radius:var(--r-sm);cursor:pointer;font-size:14px;font-weight:700;font-family:var(--font);transition:all 0.18s}
+.btn-cancel{background:transparent;border:2px solid rgba(26,31,58,0.12);color:var(--text-soft)}
+.btn-primary{background:var(--purple);color:var(--white);border:none;box-shadow:0 3px 12px rgba(124,77,255,0.3)}
+.session-hand-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(26,31,58,0.06)}
+.session-hand-row:last-child{border-bottom:none}
+.session-hand-info{flex:1;min-width:0}
+.session-hand-tiles{font-size:12px;font-weight:700;color:var(--navy);font-family:monospace}
+.session-hand-desc{font-size:10px;color:var(--text-soft);margin-top:1px}
+.win-counter{display:flex;align-items:center;gap:8px}
+.win-minus,.win-plus{width:32px;height:32px;border-radius:50%;border:2px solid rgba(26,31,58,0.12);background:none;cursor:pointer;font-size:18px;font-weight:700;color:var(--text-mid);display:flex;align-items:center;justify-content:center;transition:all 0.15s;font-family:var(--font)}
+.win-minus:hover{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.win-plus:hover{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.win-num{font-size:16px;font-weight:800;color:var(--navy);min-width:24px;text-align:center}
+.cat-section-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:var(--white);background:var(--navy);padding:6px 10px;border-radius:var(--r-xs);margin:10px 0 6px}
+.empty{text-align:center;padding:2.5rem 1rem}
+.empty-icon{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 0.75rem;font-size:24px}
+.tile-deco{font-size:1.4rem;opacity:0.15;position:fixed;pointer-events:none;z-index:0;user-select:none}
+</style>
+</head>
+<body>
+<div class="tile-deco" style="top:5%;left:2%;font-size:3rem;transform:rotate(-15deg)">🀇</div>
+<div class="tile-deco" style="top:60%;right:2%;font-size:3rem;transform:rotate(20deg)">🀅</div>
+<div class="wrap">
+  <div class="header">
+    <h1>Mahjong Hands</h1>
+    <p>2026 NMJL Card — Track every hand you win</p>
+  </div>
+  <div class="tabs">
+    <button class="tab t-overview active" id="tab-btn-overview">🀄 Overview</button>
+    <button class="tab t-sessions" id="tab-btn-sessions">📅 Sessions</button>
+    <button class="tab t-insights" id="tab-btn-insights">📊 Insights</button>
+  </div>
+  <div id="tab-overview" class="section active">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--red-light);color:var(--red)"><i class="ti ti-cards"></i></div>
+      <div><h2>All Hands</h2><p>Lifetime win totals by hand</p></div>
+    </div>
+    <div class="summary-bar" id="overview-summary"></div>
+    <div id="overview-list"></div>
+  </div>
+  <div id="tab-sessions" class="section">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--purple-light);color:var(--purple)"><i class="ti ti-calendar"></i></div>
+      <div><h2>Sessions</h2><p>Win entries by date</p></div>
+    </div>
+    <button class="add-session-btn" id="add-session-btn"><i class="ti ti-plus"></i> Add Session</button>
+    <div id="sessions-list"></div>
+    <div class="empty" id="sessions-empty" style="display:none">
+      <div class="empty-icon" style="background:var(--purple-light)"><i class="ti ti-calendar" style="color:var(--purple)"></i></div>
+      <h3>No sessions yet</h3><p>Tap Add Session after each game night!</p>
+    </div>
+  </div>
+  <div id="tab-insights" class="section">
+    <div class="sec-header">
+      <div class="sec-icon" style="background:var(--gold-light);color:var(--gold-dark)"><i class="ti ti-chart-bar"></i></div>
+      <div><h2>Insights</h2><p>Your winning patterns</p></div>
+    </div>
+    <div id="insights-content"></div>
+  </div>
+</div>
+
+<!-- SESSION MODAL -->
+<div class="modal-bg" id="session-modal-bg">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="session-modal-title">Add Session</div>
+    <div class="field"><label for="session-date">Date</label><input type="date" id="session-date"></div>
+    <div class="field"><label for="session-notes">Notes</label><input type="text" id="session-notes" placeholder="e.g. Monday Night, Lauren's house"></div>
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-soft);margin-bottom:10px">Hands Won</div>
+    <div id="session-hands-list"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="session-modal-cancel">Cancel</button>
+      <button class="btn-primary" id="session-modal-save">Save Session</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="detail-modal-bg">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="detail-content"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="detail-close">Close</button>
+      <button class="btn-primary" id="detail-edit" style="background:var(--purple)">Edit</button>
+      <button class="btn-primary" id="detail-delete" style="background:var(--red);box-shadow:none"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 2026 NMJL HANDS ──────────────────────────────────────
+const HANDS = [
+  // 2026
+  {id:'2026_1', cat:'2026', tiles:'222 000 2222 6666', desc:'Any 2 Suits', value:'X25'},
+  {id:'2026_2', cat:'2026', tiles:'2026 DDD 2222 DDD', desc:'Any 2 Suits w Matching Dragons, Kong 2 or 6', value:'X25'},
+  {id:'2026_3', cat:'2026', tiles:'FFF 2026 222 6666', desc:'Any 3 Suits', value:'X25'},
+  {id:'2026_4', cat:'2026', tiles:'22 00 222 666 NEWS', desc:'Any 2 Suits', value:'X30'},
+
+  // 2468
+  {id:'2468_1a', cat:'2468', label:'A', tiles:'222 444 6666 8888', desc:'Any 1 or 2 Suits', value:'X25'},
+  {id:'2468_1b', cat:'2468', label:'B', tiles:'222 444 6666 8888', desc:'Any 1 or 2 Suits (alt)', value:'X25'},
+  {id:'2468_2',  cat:'2468', tiles:'FF 2222 44 66 8888', desc:'Any 2 Suits', value:'X30'},
+  {id:'2468_3',  cat:'2468', tiles:'EE 22 444 666 88 WW', desc:'Any 1 Suit, East and West Only', value:'X30'},
+  {id:'2468_4',  cat:'2468', tiles:'2222 DDD 8888 DDD', desc:'Any 2 Suits w Matching Dragons, These Nos. Only', value:'X25'},
+  {id:'2468_5',  cat:'2468', tiles:'FFF 22 44 666 8888', desc:'Any 1 Suit', value:'X25'},
+  {id:'2468_6',  cat:'2468', tiles:'2468 2222 D 2222 D', desc:'Any 3 Suits, Like Kongs 2,4,6 or 8 w Matching Dragon', value:'X25'},
+  {id:'2468_7',  cat:'2468', tiles:'FFF 2468 FFF 2222', desc:'Any 2 Suits, Kong 2,4,6 or 8', value:'X30'},
+  {id:'2468_8',  cat:'2468', tiles:'FF 246 888 246 888', desc:'Any 2 Suits', value:'C30'},
+
+  // Any Like Numbers
+  {id:'any_1', cat:'Any Like Numbers', tiles:'1111 FFFFFF 1111', desc:'Any 2 Suits', value:'X30'},
+  {id:'any_2', cat:'Any Like Numbers', tiles:'1111 D 111 D 1111 D', desc:'Any 3 Suits w Matching Dragon', value:'X25'},
+  {id:'any_3', cat:'Any Like Numbers', tiles:'FF 1111 11 1111 DD', desc:'Any 3 Suits w Any Dragon', value:'X25'},
+
+  // Quints
+  {id:'qnt_1',  cat:'Quints', tiles:'11111 1111 11111', desc:'Any 3 Suits, Any Like Nos.', value:'X40'},
+  {id:'qnt_2',  cat:'Quints', tiles:'11111 11111 11111', desc:'Any 1 Suit, Any 3 Consec. Nos.', value:'X45'},
+  {id:'qnt_3',  cat:'Quints', tiles:'FF 11111 22 33333', desc:'Any 1 Suit, Any 3 Consec. Nos.', value:'X40'},
+  {id:'qnt_4',  cat:'Quints', tiles:'11111 44444 DDDD', desc:'Any 2 Nos. in Any 1 Suit w Opp. Dragon', value:'X40'},
+
+  // Consecutive Run
+  {id:'cons_1a', cat:'Consecutive Run', label:'A', tiles:'11 222 33 444 5555', desc:'Any 1 Suit, These Nos. Only', value:'X25'},
+  {id:'cons_1b', cat:'Consecutive Run', label:'B', tiles:'55 666 77 888 9999', desc:'Any 1 Suit, These Nos. Only', value:'X25'},
+  {id:'cons_2a', cat:'Consecutive Run', label:'A', tiles:'FFF 1111 234 5555', desc:'Any 1 or 2 Suits, Any 5 Consec. Nos.', value:'X25'},
+  {id:'cons_2b', cat:'Consecutive Run', label:'B', tiles:'FFF 1111 234 5555', desc:'Any 1 or 2 Suits, Any 5 Consec. Nos. (alt)', value:'X25'},
+  {id:'cons_3',  cat:'Consecutive Run', tiles:'11 22 111 222 3333', desc:'Any 3 Suits, Any 3 Consec. Nos.', value:'X25'},
+  {id:'cons_4a', cat:'Consecutive Run', label:'A', tiles:'111 222 3333 4444', desc:'Any 1 or 2 Suits, Any 4 Consec. Nos.', value:'X25'},
+  {id:'cons_4b', cat:'Consecutive Run', label:'B', tiles:'111 222 3333 4444', desc:'Any 1 or 2 Suits, Any 4 Consec. Nos. (alt)', value:'X25'},
+  {id:'cons_5a', cat:'Consecutive Run', label:'A', tiles:'FFF 11 22 333 DDDD', desc:'1 or 2 Suits, Any Run, Ds Match Middle No.', value:'X30'},
+  {id:'cons_5b', cat:'Consecutive Run', label:'B', tiles:'FFF 11 22 333 DDDD', desc:'1 or 2 Suits, Any Run, Ds Match Middle No. (alt)', value:'X30'},
+  {id:'cons_6',  cat:'Consecutive Run', tiles:'1111 FFFFFF 2222', desc:'Any 1 Suit, Any 2 Consec. Nos.', value:'X25'},
+  {id:'cons_7a', cat:'Consecutive Run', label:'A', tiles:'FF 1111 2222 3333', desc:'Any 1 or 3 Suits, Any 3 Consec. Nos.', value:'C35'},
+  {id:'cons_7b', cat:'Consecutive Run', label:'B', tiles:'FF 1111 2222 3333', desc:'Any 1 or 3 Suits, Any 3 Consec. Nos. (alt)', value:'C35'},
+  {id:'cons_8',  cat:'Consecutive Run', tiles:'1 22 333 1 22 333 44', desc:'Any 3 Suits, Any 4 Consec. Nos.', value:'C35'},
+
+  // 13579
+  {id:'13_1a', cat:'13579', label:'A', tiles:'11 333 55 777 9999', desc:'Any 1 or 3 Suits', value:'X25'},
+  {id:'13_1b', cat:'13579', label:'B', tiles:'11 333 55 777 9999', desc:'Any 1 or 3 Suits (alt)', value:'X25'},
+  {id:'13_2a', cat:'13579', label:'A', tiles:'111 333 3333 5555', desc:'Any 2 Suits', value:'X25'},
+  {id:'13_2b', cat:'13579', label:'B', tiles:'555 777 7777 9999', desc:'Any 2 Suits (alt)', value:'X25'},
+  {id:'13_3a', cat:'13579', label:'A', tiles:'NN 1111 33 5555 SS', desc:'Any 1 Suit, North and South Only', value:'X30'},
+  {id:'13_3b', cat:'13579', label:'B', tiles:'NN 5555 77 9999 SS', desc:'Any 1 Suit, North and South Only (alt)', value:'X30'},
+  {id:'13_4',  cat:'13579', tiles:'113579 1111 1111', desc:'Any 3 Suits, Pair Any Odd No., Kongs Match Pair', value:'X25'},
+  {id:'13_5a', cat:'13579', label:'A', tiles:'FFF 11 33 555 DDDD', desc:'Any 1 Suit w Matching Dragon', value:'X25'},
+  {id:'13_5b', cat:'13579', label:'B', tiles:'FFF 55 77 999 DDDD', desc:'Any 1 Suit w Matching Dragon (alt)', value:'X25'},
+  {id:'13_6a', cat:'13579', label:'A', tiles:'11 33 111 333 5555', desc:'Any 3 Suits', value:'X25'},
+  {id:'13_6b', cat:'13579', label:'B', tiles:'55 77 555 777 9999', desc:'Any 3 Suits (alt)', value:'X25'},
+  {id:'13_7a', cat:'13579', label:'A', tiles:'1111 33 55 77 9999', desc:'Any 1 or 2 Suits', value:'X30'},
+  {id:'13_7b', cat:'13579', label:'B', tiles:'1111 33 55 77 9999', desc:'Any 1 or 2 Suits (alt)', value:'X30'},
+  {id:'13_8a', cat:'13579', label:'A', tiles:'FF 11 33 55 111 111', desc:'Any 3 Suits, These Nos. Only', value:'C35'},
+  {id:'13_8b', cat:'13579', label:'B', tiles:'FF 55 77 99 555 555', desc:'Any 3 Suits, These Nos. Only (alt)', value:'C35'},
+  {id:'13_9',  cat:'13579', tiles:'FF 135 777 999 DDD', desc:'Any 1 Suit w Opp. Dragon', value:'C30'},
+
+  // Winds - Dragons
+  {id:'wd_1a', cat:'Winds - Dragons', label:'A', tiles:'NNNN EEE WWW SSSS', desc:'', value:'X25'},
+  {id:'wd_1b', cat:'Winds - Dragons', label:'B', tiles:'NNN EEEE WWWW SSS', desc:'', value:'X25'},
+  {id:'wd_2',  cat:'Winds - Dragons', tiles:'1234 DDD DDD DDDD', desc:'Any 4 Consec. Nos. in Any 1 Suit, Any 3 Dragons', value:'X25'},
+  {id:'wd_3',  cat:'Winds - Dragons', tiles:'NNN 1111 1111 SSS', desc:'Any Like Odd Nos. in Any 2 Suits', value:'X25'},
+  {id:'wd_4',  cat:'Winds - Dragons', tiles:'EEE 2222 2222 WWW', desc:'Any Like Even Nos. in Any 2 Suits', value:'X25'},
+  {id:'wd_5',  cat:'Winds - Dragons', tiles:'FFF NNNN FFF DDDD', desc:'Any Wind, Any Dragon', value:'X25'},
+  {id:'wd_6',  cat:'Winds - Dragons', tiles:'1 N 2 EE 3 WWW 4 SSSS', desc:'Any 1 Suit, These Nos. Only', value:'X25'},
+  {id:'wd_7a', cat:'Winds - Dragons', label:'A', tiles:'FF NNNN SSSS DD DD', desc:'Any 2 Dragons', value:'X25'},
+  {id:'wd_7b', cat:'Winds - Dragons', label:'B', tiles:'FF EEEE WWWW DD DD', desc:'Any 2 Dragons (alt)', value:'X25'},
+  {id:'wd_8',  cat:'Winds - Dragons', tiles:'NN EEE 2026 WWW SS', desc:'2026 Any 1 Suit', value:'C30'},
+
+  // 369
+  {id:'369_1a', cat:'369', label:'A', tiles:'333 666 6666 9999', desc:'Any 2 or 3 Suits', value:'X25'},
+  {id:'369_1b', cat:'369', label:'B', tiles:'333 666 6666 9999', desc:'Any 2 or 3 Suits (alt)', value:'X25'},
+  {id:'369_2',  cat:'369', tiles:'33 66 333 666 9999', desc:'Any 3 Suits', value:'X25'},
+  {id:'369_3a', cat:'369', label:'A', tiles:'FFF 33 666 99 DDDD', desc:'1 Suit w Matching or Opp. Dragon', value:'X25'},
+  {id:'369_3b', cat:'369', label:'B', tiles:'FFF 33 666 99 DDDD', desc:'1 Suit w Matching or Opp. Dragon (alt)', value:'X25'},
+  {id:'369_4',  cat:'369', tiles:'33 66 666 999 NEWS', desc:'Any 2 Suits', value:'X30'},
+  {id:'369_5',  cat:'369', tiles:'FF 3369 3333 3333', desc:'Any 3 Suits, Pair 3,6, or 9, Kongs Match Pair', value:'X25'},
+  {id:'369_6',  cat:'369', tiles:'FF 333 666 999 369', desc:'Any 2 Suits', value:'C30'},
+
+  // Singles & Pairs
+  {id:'sp_1', cat:'Singles & Pairs', tiles:'NN EE WW SS 1D 1D 1D', desc:'Any 3 Suits, Any Like No. w Matching Dragon', value:'C50'},
+  {id:'sp_2', cat:'Singles & Pairs', tiles:'2 4 66 88 2 4 66 88 88', desc:'Any 3 Suits, These Nos. Only', value:'C50'},
+  {id:'sp_3', cat:'Singles & Pairs', tiles:'FF 3369 3669 3699', desc:'Any 3 Suits', value:'C50'},
+  {id:'sp_4', cat:'Singles & Pairs', tiles:'11 22 33 44 55 66 77', desc:'Any 1 Suit, Any 7 Consec. Nos.', value:'C50'},
+  {id:'sp_5', cat:'Singles & Pairs', tiles:'11 357 99 11 357 99', desc:'Any 2 Suits', value:'C50'},
+  {id:'sp_6', cat:'Singles & Pairs', tiles:'FF 2026 2026 2026', desc:'Any 3 Suits', value:'C75'},
+];
+
+const CATEGORIES = [...new Set(HANDS.map(h=>h.cat))];
+
+// ── Config ──────────────────────────────────────────────
+const SUPABASE_URL = 'https://roeuahrhqshwhbtmqwtg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6_DivpGVt6mdob1SrX5L8g_Vd6QOACf';
+const RECORD_ID = 'mahjong_hands';
+
+let state = { sessions:[] };
+let _uidC = 0;
+function uid(){ return Date.now().toString(36)+(++_uidC).toString(36)+Math.random().toString(36).slice(2,5); }
+
+function fmtDate(d){
+  if(!d) return '';
+  const [y,m,day]=d.split('-');
+  return new Date(y,m-1,day).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+}
+function todayStr(){
+  const t=new Date();
+  return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+}
+
+async function save(){
+  try{ localStorage.setItem('mj_hands', JSON.stringify(state)); }catch(e){}
+  try{
+    const json = JSON.stringify(state);
+    const patch = await fetch(SUPABASE_URL+'/rest/v1/collection?id=eq.'+RECORD_ID,{
+      method:'PATCH',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation,count=exact'},
+      body:JSON.stringify({data:json})
+    });
+    if(patch.ok){
+      const rows = await patch.json().catch(()=>[]);
+      if(!Array.isArray(rows)||rows.length===0){
+        await fetch(SUPABASE_URL+'/rest/v1/collection',{
+          method:'POST',
+          headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json'},
+          body:JSON.stringify({id:RECORD_ID,data:json})
+        });
+      }
+    }
+  }catch(e){ console.warn('Save error:',e); }
+}
+
+async function load(){
+  try{
+    const r = await fetch(SUPABASE_URL+'/rest/v1/collection?id=eq.'+RECORD_ID,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    if(r.ok){
+      const rows = await r.json();
+      if(rows.length>0){ state={sessions:[], ...JSON.parse(rows[0].data)}; return; }
+    }
+  }catch(e){}
+  try{
+    const local = localStorage.getItem('mj_hands');
+    if(local) state={sessions:[], ...JSON.parse(local)};
+  }catch(e){}
+}
+
+['overview','sessions','insights'].forEach(name=>{
+  document.getElementById('tab-btn-'+name).addEventListener('click',()=>showTab(name));
+});
+function showTab(name){
+  ['overview','sessions','insights'].forEach(t=>{
+    document.getElementById('tab-btn-'+t).classList.toggle('active',t===name);
+    document.getElementById('tab-'+t).classList.toggle('active',t===name);
+  });
+  if(name==='overview') renderOverview();
+  if(name==='sessions') renderSessions();
+  if(name==='insights') renderInsights();
+}
+
+function getTotals(){
+  const totals = {};
+  HANDS.forEach(h=>{ totals[h.id]=0; });
+  (state.sessions||[]).forEach(s=>{
+    Object.entries(s.wins||{}).forEach(([hid,count])=>{
+      if(totals[hid]!==undefined) totals[hid]+=count;
+    });
+  });
+  return totals;
+}
+
+function renderOverview(){
+  const totals = getTotals();
+  const totalWins = Object.values(totals).reduce((a,b)=>a+b,0);
+  const handsWon = Object.values(totals).filter(v=>v>0).length;
+  const maxCount = Math.max(...Object.values(totals),1);
+
+  document.getElementById('overview-summary').innerHTML=`
+    <div class="summary-card"><div class="summary-val">${totalWins}</div><div class="summary-label">Total Wins</div></div>
+    <div class="summary-card"><div class="summary-val">${(state.sessions||[]).length}</div><div class="summary-label">Sessions</div></div>
+    <div class="summary-card"><div class="summary-val">${handsWon}</div><div class="summary-label">Hands Won</div></div>
+    <div class="summary-card"><div class="summary-val">${HANDS.length-handsWon}</div><div class="summary-label">Never Won</div></div>`;
+
+  const list = document.getElementById('overview-list');
+  list.innerHTML='';
+  CATEGORIES.forEach(cat=>{
+    const catHands = HANDS.filter(h=>h.cat===cat);
+    const catTotal = catHands.reduce((s,h)=>s+totals[h.id],0);
+    const header = document.createElement('div');
+    header.className='category-header';
+    header.textContent=cat+' — '+catTotal+' wins';
+    list.appendChild(header);
+    catHands.forEach(hand=>{
+      const count = totals[hand.id];
+      const barW = Math.round((count/maxCount)*100);
+      const row = document.createElement('div');
+      row.className='hand-row';
+      row.innerHTML=`
+        <div class="hand-info">
+          ${hand.label?`<span class="hand-label">${hand.label}</span>`:''}
+          <div class="hand-tiles">${hand.tiles}</div>
+          ${hand.desc?`<div class="hand-desc">${hand.desc} · ${hand.value}</div>`:`<div class="hand-desc">${hand.value}</div>`}
+        </div>
+        <div class="hand-bar-wrap"><div class="hand-bar" style="width:${barW}%"></div></div>
+        <div class="hand-count ${count===0?'zero':''}">${count||'—'}</div>`;
+      list.appendChild(row);
+    });
+  });
+}
+
+// ── Session Modal ────────────────────────────────────────
+const sessionModalBg = document.getElementById('session-modal-bg');
+sessionModalBg.addEventListener('click',e=>{ if(e.target===sessionModalBg) closeSessionModal(); });
+document.getElementById('session-modal-cancel').addEventListener('click',closeSessionModal);
+function closeSessionModal(){ sessionModalBg.classList.remove('open'); }
+
+let sessionEditId = null;
+let sessionWins = {};
+
+function openSessionModal(editId){
+  sessionEditId = editId||null;
+  const existing = editId ? (state.sessions||[]).find(s=>s.id===editId) : null;
+  document.getElementById('session-modal-title').textContent = existing ? 'Edit Session' : 'Add Session';
+  document.getElementById('session-date').value = existing?.date||todayStr();
+  document.getElementById('session-notes').value = existing?.notes||'';
+  sessionWins = {...(existing?.wins||{})};
+  buildSessionHandsList();
+  sessionModalBg.classList.add('open');
+}
+
+function buildSessionHandsList(){
+  const container = document.getElementById('session-hands-list');
+  container.innerHTML='';
+  CATEGORIES.forEach(cat=>{
+    const label = document.createElement('div');
+    label.className='cat-section-label';
+    label.textContent=cat;
+    container.appendChild(label);
+    HANDS.filter(h=>h.cat===cat).forEach(hand=>{
+      const row = document.createElement('div');
+      row.className='session-hand-row';
+      const count = sessionWins[hand.id]||0;
+      row.innerHTML=`
+        <div class="session-hand-info">
+          ${hand.label?`<span class="hand-label">${hand.label}</span> `:''}
+          <div class="session-hand-tiles">${hand.tiles}</div>
+          ${hand.desc?`<div class="session-hand-desc">${hand.desc}</div>`:''}
+        </div>
+        <div class="win-counter">
+          <button class="win-minus" data-id="${hand.id}">−</button>
+          <div class="win-num" id="wn-${hand.id}">${count}</div>
+          <button class="win-plus" data-id="${hand.id}">+</button>
+        </div>`;
+      row.querySelector('.win-minus').addEventListener('click',()=>{
+        sessionWins[hand.id]=Math.max(0,(sessionWins[hand.id]||0)-1);
+        document.getElementById('wn-'+hand.id).textContent=sessionWins[hand.id]||0;
+      });
+      row.querySelector('.win-plus').addEventListener('click',()=>{
+        sessionWins[hand.id]=(sessionWins[hand.id]||0)+1;
+        document.getElementById('wn-'+hand.id).textContent=sessionWins[hand.id];
+      });
+      container.appendChild(row);
+    });
+  });
+}
+
+document.getElementById('session-modal-save').addEventListener('click',function(){
+  const date = document.getElementById('session-date').value;
+  if(!date){ alert('Please select a date.'); return; }
+  const notes = document.getElementById('session-notes').value.trim();
+  const wins = {};
+  Object.entries(sessionWins).forEach(([k,v])=>{ if(v>0) wins[k]=v; });
+  if(!state.sessions) state.sessions=[];
+  if(sessionEditId){
+    const s=state.sessions.find(x=>x.id===sessionEditId);
+    if(s){ s.date=date; s.notes=notes; s.wins=wins; }
+  } else {
+    state.sessions.push({id:uid(),date,notes,wins});
+  }
+  save().catch(e=>console.warn(e));
+  closeSessionModal();
+  renderSessions();
+  renderOverview();
+});
+
+document.getElementById('add-session-btn').addEventListener('click',()=>openSessionModal());
+
+function renderSessions(){
+  const list = document.getElementById('sessions-list');
+  const empty = document.getElementById('sessions-empty');
+  const sorted = [...(state.sessions||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sorted.length){ list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  list.innerHTML='';
+  sorted.forEach(s=>{
+    const total = Object.values(s.wins||{}).reduce((a,b)=>a+b,0);
+    const topHands = Object.entries(s.wins||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,4);
+    const card = document.createElement('div');
+    card.className='session-card';
+    card.innerHTML=`
+      <div class="session-header">
+        <div>
+          <div class="session-date">${fmtDate(s.date)}</div>
+          ${s.notes?`<div style="font-size:12px;color:var(--text-soft);margin-top:2px">${s.notes}</div>`:''}
+        </div>
+        <div class="session-total">${total} win${total!==1?'s':''}</div>
+      </div>
+      ${topHands.length?`<div class="session-preview">
+        ${topHands.map(([hid,count])=>{
+          const hand = HANDS.find(h=>h.id===hid);
+          return hand?`<span class="session-pill">${hand.label?hand.label+': ':''}${hand.tiles.slice(0,20)} ×${count}</span>`:'';
+        }).join('')}
+        ${Object.keys(s.wins||{}).filter(k=>s.wins[k]>0).length>4?`<span class="session-pill">+${Object.keys(s.wins||{}).filter(k=>s.wins[k]>0).length-4} more</span>`:''}
+      </div>`:''}`;
+    card.addEventListener('click',()=>openSessionDetail(s.id));
+    list.appendChild(card);
+  });
+}
+
+// ── Detail Modal ─────────────────────────────────────────
+const detailModalBg = document.getElementById('detail-modal-bg');
+detailModalBg.addEventListener('click',e=>{ if(e.target===detailModalBg) closeDetail(); });
+document.getElementById('detail-close').addEventListener('click',closeDetail);
+function closeDetail(){ detailModalBg.classList.remove('open'); }
+
+let currentSessionId = null;
+document.getElementById('detail-edit').addEventListener('click',()=>{ closeDetail(); openSessionModal(currentSessionId); });
+document.getElementById('detail-delete').addEventListener('click',()=>{
+  if(confirm('Delete this session?')){
+    state.sessions=state.sessions.filter(x=>x.id!==currentSessionId);
+    save().catch(e=>console.warn(e));
+    closeDetail();
+    renderSessions();
+    renderOverview();
+  }
+});
+
+function openSessionDetail(sessionId){
+  currentSessionId = sessionId;
+  const s = (state.sessions||[]).find(x=>x.id===sessionId);
+  if(!s) return;
+  const winEntries = Object.entries(s.wins||{}).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const total = winEntries.reduce((sum,[,v])=>sum+v,0);
+  const content = document.getElementById('detail-content');
+  content.innerHTML=`
+    <div style="background:linear-gradient(135deg,var(--purple-light),var(--red-light));border-radius:12px;padding:16px;margin-bottom:1rem;text-align:center">
+      <div style="font-size:18px;font-weight:700;color:var(--purple-dark)">${fmtDate(s.date)}</div>
+      ${s.notes?`<div style="font-size:13px;color:var(--text-soft);margin-top:3px">${s.notes}</div>`:''}
+      <div style="font-size:13px;font-weight:700;color:var(--red);margin-top:8px">${total} total win${total!==1?'s':''}</div>
+    </div>
+    ${winEntries.length?`
+    <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-soft);margin-bottom:8px">Hands Won</div>
+    ${winEntries.map(([hid,count],i)=>{
+      const hand = HANDS.find(h=>h.id===hid);
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(26,31,58,0.06)">
+        <div style="width:28px;height:28px;border-radius:50%;background:${i===0?'linear-gradient(135deg,#f5a623,#f7c85a)':i===1?'linear-gradient(135deg,#9e9e9e,#bdbdbd)':i===2?'linear-gradient(135deg,#cd7f32,#e8a060)':'var(--purple-light)'};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i<3?'white':'var(--purple-dark)'};flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          ${hand?.label?`<span class="hand-label">${hand.label}</span> `:''}
+          <span style="font-size:12px;font-weight:700;color:var(--navy);font-family:monospace">${hand?.tiles||'Unknown'}</span>
+          <div style="font-size:10px;color:var(--text-soft)">${hand?.cat||''} ${hand?.desc?'· '+hand.desc:''}</div>
+        </div>
+        <div style="font-size:15px;font-weight:800;color:var(--red);background:var(--red-light);padding:3px 10px;border-radius:20px">×${count}</div>
+      </div>`;
+    }).join('')}`
+    :'<div style="text-align:center;color:var(--text-soft);font-size:13px;padding:1rem">No wins recorded this session.</div>'}`;
+  detailModalBg.classList.add('open');
+}
+
+// ── Insights ─────────────────────────────────────────────
+function renderInsights(){
+  const totals = getTotals();
+  const container = document.getElementById('insights-content');
+  const allWon = HANDS.filter(h=>totals[h.id]>0).sort((a,b)=>totals[b.id]-totals[a.id]);
+  const neverWon = HANDS.filter(h=>totals[h.id]===0);
+  const top5 = allWon.slice(0,5);
+  const bottom5 = allWon.length>0 ? [...allWon].reverse().slice(0,5) : [];
+
+  function rankBg(i){ return i===0?'linear-gradient(135deg,#f5a623,#f7c85a)':i===1?'linear-gradient(135deg,#9e9e9e,#bdbdbd)':i===2?'linear-gradient(135deg,#cd7f32,#e8a060)':'var(--purple-light)'; }
+  function rankColor(i){ return i<3?'white':'var(--purple-dark)'; }
+
+  container.innerHTML=`
+    <div class="insight-section">
+      <div class="insight-title" style="color:var(--green)"><i class="ti ti-trophy"></i> Top 5 Hands You Win Most</div>
+      ${top5.length ? top5.map((h,i)=>`
+        <div class="insight-row">
+          <div class="insight-rank" style="background:${rankBg(i)};color:${rankColor(i)}">${i+1}</div>
+          <div class="insight-hand">${h.label?`<span class="hand-label">${h.label}</span> `:''}${h.tiles}<br><span style="font-size:10px;color:var(--text-soft)">${h.cat}${h.desc?' · '+h.desc:''}</span></div>
+          <div class="insight-count" style="background:var(--green-light);color:var(--green-dark)">${totals[h.id]}</div>
+        </div>`).join('')
+      : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:1rem">No wins yet.</div>'}
+    </div>
+    <div class="insight-section">
+      <div class="insight-title" style="color:var(--red)"><i class="ti ti-trending-down"></i> Top 5 Hands You Win Least</div>
+      ${bottom5.length ? bottom5.map((h,i)=>`
+        <div class="insight-row">
+          <div class="insight-rank" style="background:var(--red-light);color:var(--red-dark)">${i+1}</div>
+          <div class="insight-hand">${h.label?`<span class="hand-label">${h.label}</span> `:''}${h.tiles}<br><span style="font-size:10px;color:var(--text-soft)">${h.cat}${h.desc?' · '+h.desc:''}</span></div>
+          <div class="insight-count" style="background:var(--red-light);color:var(--red-dark)">${totals[h.id]}</div>
+        </div>`).join('')
+      : '<div style="color:var(--text-soft);font-size:13px;text-align:center;padding:1rem">No wins yet.</div>'}
+    </div>
+    <div class="insight-section">
+      <div class="insight-title" style="color:var(--text-soft)"><i class="ti ti-circle-dashed"></i> Never Won (${neverWon.length})</div>
+      ${neverWon.length
+        ? '<div style="display:flex;flex-wrap:wrap;gap:5px">'+neverWon.map(h=>`<span class="never-pill">${h.label?h.label+': ':''}${h.tiles}</span>`).join('')+'</div>'
+        : '<div style="color:var(--green);font-size:13px;text-align:center;padding:1rem;font-weight:700">🎉 You\'ve won every hand!</div>'}
+    </div>`;
+}
+
+// ── Init ─────────────────────────────────────────────────
+load().then(()=>{
+  renderOverview();
+  renderSessions();
+}).catch(()=>{
+  renderOverview();
+  renderSessions();
+});
+</script>
+</body>
+</html>
